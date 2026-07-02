@@ -10,8 +10,7 @@ export default async function TablaPage() {
       <section className="premium-band px-5 py-7 sm:px-8 sm:py-8">
         <SectionHeader eyebrow="Clasificación oficial" title="Tabla completa" />
         <p className="max-w-3xl text-base leading-7 text-slate-700">
-          Aquí se ve la carrera completa: posiciones, movimiento contra el último resultado,
-          puntos totales y exactos con lectura rápida, limpia y sin tener que adivinar nada.
+          Posiciones, movimiento, puntos y exactos en un solo lugar.
         </p>
       </section>
 
