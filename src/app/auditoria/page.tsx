@@ -12,12 +12,12 @@ export default async function AuditoriaPage() {
           <article key={log.id} className="panel p-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm font-semibold text-slate-900">
+                <p className="text-sm font-semibold text-white">
                   {log.action} · {log.entityType}
                 </p>
-                <p className="mt-1 text-sm text-slate-600">{log.reason}</p>
+                <p className="mt-1 text-sm text-white/58">{log.reason}</p>
               </div>
-              <time className="text-sm text-slate-500">{formatDateTime(log.createdAt)}</time>
+              <time className="text-sm text-white/42">{formatDateTime(log.createdAt)}</time>
             </div>
           </article>
         ))}

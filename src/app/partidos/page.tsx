@@ -13,7 +13,7 @@ export default async function PartidosPage() {
     <main className="page-shell space-y-8">
       <section className="premium-band px-5 py-7 sm:px-8 sm:py-8">
         <SectionHeader eyebrow="Calendario del torneo" title="Partidos" />
-        <p className="max-w-3xl text-base leading-7 text-slate-700">
+        <p className="max-w-3xl text-base leading-7 text-white/62">
           Resultados, próximos cruces y pronósticos cargados por partido.
         </p>
       </section>

@@ -9,7 +9,7 @@ export default async function TablaPage() {
     <main className="page-shell space-y-8">
       <section className="premium-band px-5 py-7 sm:px-8 sm:py-8">
         <SectionHeader eyebrow="Clasificación oficial" title="Tabla completa" />
-        <p className="max-w-3xl text-base leading-7 text-slate-700">
+        <p className="max-w-3xl text-base leading-7 text-white/62">
           Posiciones, movimiento, puntos y exactos en un solo lugar.
         </p>
       </section>
@@ -18,26 +18,26 @@ export default async function TablaPage() {
 
       <section className="mt-6 grid gap-4 md:grid-cols-3">
         <div className="panel p-5">
-          <h2 className="font-semibold text-slate-900">Posiciones compartidas</h2>
-          <p className="mt-3 text-sm leading-6 text-slate-600">
+          <h2 className="font-semibold text-white">Posiciones compartidas</h2>
+          <p className="mt-3 text-sm leading-6 text-white/58">
             Se muestran con el símbolo = cuando puntos y marcadores exactos son iguales.
           </p>
         </div>
         <div className="panel p-5">
-          <h2 className="font-semibold text-slate-900">Lectura rápida</h2>
-          <p className="mt-3 text-sm leading-6 text-slate-600">
+          <h2 className="font-semibold text-white">Lectura rápida</h2>
+          <p className="mt-3 text-sm leading-6 text-white/58">
             La flecha verde marca quién subió lugares y la roja quién bajó, comparado con la tabla previa al último resultado.
           </p>
         </div>
         <div className="panel p-5">
-          <h2 className="font-semibold text-slate-900">Criterios de desempate</h2>
-          <p className="mt-3 text-sm leading-6 text-slate-600">
+          <h2 className="font-semibold text-white">Criterios de desempate</h2>
+          <p className="mt-3 text-sm leading-6 text-white/58">
             Más puntos, más marcadores exactos y luego posición compartida.
           </p>
         </div>
         <div className="panel p-5 md:col-span-3">
-          <h2 className="font-semibold text-slate-900">Premios empatados</h2>
-          <p className="mt-3 text-sm leading-6 text-slate-600">
+          <h2 className="font-semibold text-white">Premios empatados</h2>
+          <p className="mt-3 text-sm leading-6 text-white/58">
             Al finalizar, los premios involucrados se suman y se dividen entre quienes empaten.
           </p>
         </div>

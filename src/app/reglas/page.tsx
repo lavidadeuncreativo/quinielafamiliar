@@ -42,11 +42,11 @@ export default function ReglasPage() {
       <div className="grid gap-4 md:grid-cols-2">
         {rules.map((rule) => (
           <section key={rule.title} className="panel p-5">
-            <h2 className="text-xl font-semibold text-slate-900">{rule.title}</h2>
-            <ul className="mt-4 space-y-3 text-sm leading-6 text-slate-600">
+            <h2 className="text-xl font-semibold text-white">{rule.title}</h2>
+            <ul className="mt-4 space-y-3 text-sm leading-6 text-white/58">
               {rule.items.map((item) => (
                 <li key={item} className="flex gap-3">
-                  <span className="mt-2 size-1.5 rounded-full bg-amber-400" />
+                  <span className="mt-2 size-1.5 rounded-full bg-lime-300" />
                   <span>{item}</span>
                 </li>
               ))}
