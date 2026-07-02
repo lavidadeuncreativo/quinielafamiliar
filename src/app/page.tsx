@@ -2,17 +2,16 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import {
   ArrowDownRight,
-  ArrowRight,
   ArrowUpRight,
   Banknote,
   CalendarClock,
   Medal,
   Sparkles,
+  Target,
   Trophy,
   Users
 } from "lucide-react";
 import { MatchCard } from "@/components/MatchCard";
-import { MetricCard } from "@/components/MetricCard";
 import { SectionHeader } from "@/components/SectionHeader";
 import { StandingsTable } from "@/components/StandingsTable";
 import {
@@ -20,239 +19,334 @@ import {
   formatDateTime,
   getLatestResult,
   getNextMatch,
-  formatScore,
-  getPublicSnapshot
+  getPublicSnapshot,
+  paymentSummary
 } from "@/lib/data/repository";
+import type { StandingRow } from "@/lib/types";
 
 export default async function HomePage() {
   const snapshot = await getPublicSnapshot();
   const latestResult = getLatestResult(snapshot);
   const nextMatch = getNextMatch(snapshot);
+  const payments = paymentSummary(snapshot);
   const leader = snapshot.standings[0];
   const podium = snapshot.standings.slice(0, 3);
-  const biggestClimb = [...snapshot.standings].sort(
-    (left, right) => right.positionDelta - left.positionDelta || right.pointsDelta - left.pointsDelta
+  const topMovers = sortedMovers(snapshot.standings).slice(0, 3);
+  const completedMatches = snapshot.matches.filter((match) => match.status === "completed").length;
+  const activeMatches = snapshot.matches.filter((match) => match.status !== "excluded").length;
+  const coverage = Math.round(
+    (snapshot.predictions.length / Math.max(snapshot.participants.length * activeMatches, 1)) * 100
+  );
+  const exactLeader = [...snapshot.standings].sort(
+    (left, right) => right.exactScores - left.exactScores || right.points - left.points
   )[0];
-  const biggestPointsJump = [...snapshot.standings].sort(
-    (left, right) => right.pointsDelta - left.pointsDelta || right.positionDelta - left.positionDelta
-  )[0];
+  const secondPlace = snapshot.standings[1];
+  const gapToSecond = leader && secondPlace ? leader.points - secondPlace.points : 0;
 
   return (
-    <main className="page-shell space-y-8">
-      <section className="grid gap-6 lg:grid-cols-[1.4fr_.8fr]">
-        <div className="panel overflow-hidden">
-          <div className="border-b border-slate-200 bg-[radial-gradient(circle_at_top_left,rgba(15,157,122,.16),transparent_26%),radial-gradient(circle_at_top_right,rgba(230,57,70,.14),transparent_24%),linear-gradient(135deg,rgba(255,255,255,.96),rgba(250,246,236,.98))] p-5 sm:p-7">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700/85">
-              Mundial 2026
-            </p>
-            <h1 className="font-heading mt-3 text-5xl font-semibold text-slate-900 sm:text-6xl">
-              Quiniela Familiar
+    <main className="page-shell space-y-10">
+      <section className="premium-band px-5 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
+        <div className="grid gap-10 lg:grid-cols-[1.18fr_.82fr] lg:items-start">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/70 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-800 shadow-[0_10px_20px_rgba(15,23,42,.05)]">
+              <Sparkles aria-hidden="true" className="size-3.5" />
+              Family World Cup Pool
+            </div>
+            <h1 className="font-heading mt-6 max-w-4xl text-5xl font-semibold leading-[0.92] text-slate-950 sm:text-6xl lg:text-7xl">
+              La quiniela de la familia, presentada como si FIFA nos hubiera hecho la página.
             </h1>
-            <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600">
-              Entra y ve luego luego cómo va la tabla, quién subió posiciones y cuántos puntos se movieron en la última actualización.
+            <p className="mt-5 max-w-2xl text-base leading-7 text-slate-700 sm:text-lg">
+              Tabla clara desde el primer segundo, movimientos de posiciones fáciles de leer y un
+              frente visual que ya se siente como tablero oficial de torneo.
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-7 flex flex-wrap gap-3">
               <Link href="/tabla" className="btn-primary">
-                <ArrowRight aria-hidden="true" className="size-4" />
+                <Trophy aria-hidden="true" className="size-4" />
                 Ver tabla completa
               </Link>
-              <Link href="/reglas" className="btn-secondary">
-                Reglas
+              <Link href="/partidos" className="btn-secondary">
+                <CalendarClock aria-hidden="true" className="size-4" />
+                Ver calendario
               </Link>
             </div>
-            <div className="mt-6 grid gap-3 md:grid-cols-3">
-              <QuickHighlight
-                icon={<Trophy aria-hidden="true" className="size-4" />}
-                label="Líder actual"
-                value={leader ? `${leader.participant.name} · ${leader.points} pts` : "Pendiente"}
+
+            <div className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <HeroFact
+                label="Bolsa del torneo"
+                value={formatCurrency(snapshot.settings.prizePool)}
+                detail={`${payments.paid}/${payments.total} pagos confirmados`}
               />
-              <QuickHighlight
-                icon={<Sparkles aria-hidden="true" className="size-4" />}
-                label="Más puntos en la última"
-                value={
-                  biggestPointsJump
-                    ? `${biggestPointsJump.participant.name} · ${signedValue(biggestPointsJump.pointsDelta)}`
-                    : "Sin cambios"
-                }
+              <HeroFact
+                label="Partidos contabilizados"
+                value={String(completedMatches)}
+                detail={`${activeMatches - completedMatches} por jugar`}
               />
-              <QuickHighlight
-                icon={
-                  biggestClimb && biggestClimb.positionDelta >= 0 ? (
-                    <ArrowUpRight aria-hidden="true" className="size-4" />
-                  ) : (
-                    <ArrowDownRight aria-hidden="true" className="size-4" />
-                  )
-                }
-                label="Mayor movimiento"
-                value={
-                  biggestClimb
-                    ? `${biggestClimb.participant.name} · ${describeMovement(biggestClimb.positionDelta)}`
-                    : "Sin cambios"
-                }
+              <HeroFact
+                label="Cobertura de pronósticos"
+                value={`${coverage}%`}
+                detail={`${snapshot.predictions.length} registros cargados`}
+              />
+              <HeroFact
+                label="Última actualización"
+                value={formatDateTime(snapshot.settings.lastUpdatedAt)}
+                detail="Hora del centro de México"
               />
             </div>
           </div>
-          <div className="grid gap-3 p-4 sm:grid-cols-3 sm:p-5">
-            <MetricCard
-              label="Bolsa acumulada"
-              value={formatCurrency(snapshot.settings.prizePool)}
-              detail="Entrada de $200 por participante"
-              tone="gold"
-            />
-            <MetricCard
-              label="Participantes"
-              value={snapshot.participants.length}
-              detail="Familia registrada"
-              tone="green"
-            />
-            <MetricCard
-              label="Última actualización"
-              value={<span className="text-xl sm:text-2xl">{formatDateTime(snapshot.settings.lastUpdatedAt)}</span>}
-              detail="Hora del centro de México"
-            />
+
+          <div className="grid gap-4">
+            {leader ? (
+              <article className="overflow-hidden rounded-[28px] bg-[linear-gradient(160deg,#10224b,#1843b6)] p-6 text-white shadow-[0_28px_60px_rgba(16,34,75,.25)]">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/65">
+                      Líder actual
+                    </p>
+                    <h2 className="font-heading mt-3 text-4xl font-semibold leading-none">
+                      {leader.participant.name}
+                    </h2>
+                    <p className="mt-3 text-sm text-white/72">
+                      {leader.exactScores} exactos y {leader.simpleHits} aciertos contabilizados.
+                    </p>
+                  </div>
+                  <span className="rounded-full border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-white/85">
+                    {leader.position}
+                    {leader.sharedPosition ? "°=" : "°"}
+                  </span>
+                </div>
+
+                <div className="mt-8 flex items-end justify-between gap-4">
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/60">
+                      Puntos totales
+                    </p>
+                    <p className="font-heading mt-2 text-6xl font-semibold leading-none">
+                      {leader.points}
+                    </p>
+                  </div>
+                  <div className="rounded-[22px] bg-white/10 px-4 py-3 text-right backdrop-blur">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/60">
+                      Ventaja
+                    </p>
+                    <p className="mt-1 text-xl font-semibold">
+                      {gapToSecond > 0 ? `${gapToSecond} pts` : "Empate"}
+                    </p>
+                  </div>
+                </div>
+              </article>
+            ) : null}
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <article className="rounded-[24px] border border-white/70 bg-white/80 p-5 shadow-[0_18px_40px_rgba(15,23,42,.06)]">
+                <div className="flex items-center gap-2 text-amber-600">
+                  <Medal aria-hidden="true" className="size-4" />
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em]">
+                    Podio
+                  </p>
+                </div>
+                <div className="mt-4 space-y-3">
+                  {podium.map((row, index) => (
+                    <div
+                      key={row.participant.id}
+                      className="flex items-center justify-between border-b border-slate-100 pb-3 last:border-b-0 last:pb-0"
+                    >
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.16em] text-slate-500">
+                          {index === 0 ? "1er lugar" : index === 1 ? "2do lugar" : "3er lugar"}
+                        </p>
+                        <p className="mt-1 font-semibold text-slate-900">{row.participant.name}</p>
+                      </div>
+                      <p className="text-lg font-semibold text-slate-900">{row.points}</p>
+                    </div>
+                  ))}
+                </div>
+              </article>
+
+              <article className="rounded-[24px] border border-white/70 bg-white/80 p-5 shadow-[0_18px_40px_rgba(15,23,42,.06)]">
+                <div className="flex items-center gap-2 text-emerald-700">
+                  <Target aria-hidden="true" className="size-4" />
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em]">
+                    Precisión
+                  </p>
+                </div>
+                <p className="font-heading mt-4 text-3xl font-semibold text-slate-900">
+                  {exactLeader?.participant.name ?? "Pendiente"}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Marca el ritmo con {exactLeader?.exactScores ?? 0} marcadores exactos.
+                </p>
+              </article>
+            </div>
           </div>
         </div>
-
-        <aside className="grid gap-4">
-          <div className="panel p-5">
-            <div className="flex items-center gap-3 text-amber-600">
-              <Banknote aria-hidden="true" className="size-5" />
-              <h2 className="font-semibold text-slate-900">Premios</h2>
-            </div>
-            <div className="mt-4 grid gap-3">
-              {snapshot.settings.prizes.map((prize) => (
-                <div key={prize.place} className="flex items-center justify-between rounded-2xl bg-slate-50 px-3 py-2">
-                  <span className="text-sm text-slate-500">{prize.place}</span>
-                  <span className="font-semibold text-slate-900">{formatCurrency(prize.amount)}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="panel p-5">
-            <div className="flex items-center gap-3 text-emerald-700">
-              <Medal aria-hidden="true" className="size-5" />
-              <h2 className="font-semibold text-slate-900">Podio actual</h2>
-            </div>
-            <div className="mt-4 grid gap-3">
-              {podium.map((row, index) => (
-                <div key={row.participant.id} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.16em] text-slate-500">
-                        {index === 0 ? "Primer lugar" : index === 1 ? "Segundo lugar" : "Tercer lugar"}
-                      </p>
-                      <p className="mt-1 font-semibold text-slate-900">{row.participant.name}</p>
-                    </div>
-                    <span className="position-pill">
-                      {row.position}
-                      {row.sharedPosition ? "°=" : "°"}
-                    </span>
-                  </div>
-                  <div className="mt-3 flex items-center justify-between text-sm">
-                    <span className="text-slate-500">{row.exactScores} exactos</span>
-                    <span className="font-semibold text-slate-900">{row.points} pts</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </aside>
       </section>
 
-      <section className="mt-8 grid gap-6 lg:grid-cols-[1fr_.85fr]">
+      <section className="grid gap-8 xl:grid-cols-[1.15fr_.85fr]">
         <div>
           <SectionHeader
-            eyebrow="Tabla actual"
-            title="Posiciones"
+            eyebrow="Clasificación en vivo"
+            title="Tabla al instante"
             action={
               <Link href="/tabla" className="btn-secondary">
                 <Users aria-hidden="true" className="size-4" />
-                Tabla completa
+                Ir al desglose
               </Link>
             }
           />
-          <StandingsTable rows={snapshot.standings.slice(0, 5)} compact />
+          <StandingsTable rows={snapshot.standings.slice(0, 6)} compact />
         </div>
 
         <div className="grid gap-4">
-          <SectionHeader eyebrow="Partidos" title="Último y próximo movimiento" />
-          {latestResult ? <MatchCard match={latestResult} /> : null}
-          {latestResult ? (
-            <div className="panel p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-sky-700/80">
-                Resumen del último resultado
-              </p>
-              <p className="mt-2 text-xl font-semibold text-slate-900">
-                {latestResult.homeTeam} {formatScore(latestResult)} {latestResult.awayTeam}
-              </p>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                La tabla ya refleja ese partido y por eso ahora ves flechas de subida o bajada junto a cada participante.
-              </p>
-            </div>
-          ) : null}
-          {nextMatch ? (
-            <div>
-              <div className="mb-2 flex items-center gap-2 text-sm text-slate-500">
-                <CalendarClock aria-hidden="true" className="size-4" />
-                Próximo partido
-              </div>
-              <MatchCard match={nextMatch} />
-            </div>
-          ) : null}
+          <SectionHeader eyebrow="Historias de la jornada" title="Movimiento y presión" />
+          <div className="grid gap-4">
+            {topMovers.map((row) => (
+              <MomentumCard key={row.participant.id} row={row} />
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="mt-8 grid gap-4 md:grid-cols-3">
-        <div className="panel p-5">
-          <h2 className="font-semibold text-slate-900">Reglas resumidas</h2>
-          <p className="mt-3 text-sm leading-6 text-slate-600">
-            Marcador exacto con ganador vale 3. Ganador correcto sin exacto vale 1. En empate,
-            exacto vale 3 y clasificado correcto agrega 1.
-          </p>
+      <section className="grid gap-8 xl:grid-cols-[.92fr_1.08fr]">
+        <div>
+          <SectionHeader eyebrow="Partido destacado" title="Último resultado y lo que sigue" />
+          <div className="grid gap-4">
+            {latestResult ? <MatchCard match={latestResult} /> : null}
+            {nextMatch ? (
+              <article className="panel p-5">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-sky-700">
+                  Siguiente cita del calendario
+                </p>
+                <p className="font-heading mt-3 text-3xl font-semibold text-slate-900">
+                  {nextMatch.homeTeam} vs {nextMatch.awayTeam}
+                </p>
+                <p className="mt-3 text-sm leading-6 text-slate-600">
+                  El tablero ya está listo para reflejar quién sube y quién cae apenas entre el
+                  resultado.
+                </p>
+              </article>
+            ) : null}
+          </div>
         </div>
-        <div className="panel p-5">
-          <h2 className="font-semibold text-slate-900">Desempates</h2>
-          <p className="mt-3 text-sm leading-6 text-slate-600">
-            Primero puntos, luego marcadores exactos. Si persiste el empate, se comparte posición.
-          </p>
-        </div>
-        <div className="panel p-5">
-          <h2 className="font-semibold text-slate-900">Auditoría</h2>
-          <p className="mt-3 text-sm leading-6 text-slate-600">
-            Cada corrección registrada desde el panel privado conserva razón, entidad y fecha.
-          </p>
+
+        <div>
+          <SectionHeader eyebrow="Lo esencial" title="Premios, reglas y cierre" />
+          <div className="surface-grid">
+            <SurfaceNote
+              icon={<Banknote aria-hidden="true" className="size-5" />}
+              title="Premios"
+              body={`${formatCurrency(snapshot.settings.prizePool)} acumulados con ${formatCurrency(snapshot.settings.entryAmount)} por entrada.`}
+            />
+            <SurfaceNote
+              icon={<Trophy aria-hidden="true" className="size-5" />}
+              title="Desempate"
+              body="Primero puntos, luego exactos. Si persiste el empate, se comparte posición."
+            />
+            <SurfaceNote
+              icon={<ArrowUpRight aria-hidden="true" className="size-5" />}
+              title="Lectura rápida"
+              body="Las flechas verdes y rojas comparan la tabla actual contra la previa al último resultado."
+            />
+          </div>
         </div>
       </section>
     </main>
   );
 }
 
-function QuickHighlight({
-  icon,
+function HeroFact({
   label,
-  value
+  value,
+  detail
 }: {
-  icon: ReactNode;
   label: string;
   value: string;
+  detail: string;
 }) {
   return (
-    <div className="rounded-[20px] border border-white/70 bg-white/80 px-4 py-3 shadow-[0_10px_30px_rgba(15,23,42,.05)]">
-      <div className="flex items-center gap-2 text-sky-700">{icon}</div>
-      <p className="mt-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{label}</p>
-      <p className="mt-1 text-sm font-semibold text-slate-900">{value}</p>
-    </div>
+    <article className="rounded-[24px] border border-white/75 bg-white/72 px-4 py-4 shadow-[0_14px_28px_rgba(15,23,42,.05)]">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{label}</p>
+      <p className="mt-2 text-lg font-semibold text-slate-950">{value}</p>
+      <p className="mt-2 text-sm text-slate-600">{detail}</p>
+    </article>
   );
 }
 
-function signedValue(value: number): string {
-  if (value > 0) return `+${value} pts`;
-  if (value < 0) return `${value} pts`;
-  return "0 pts";
+function MomentumCard({ row }: { row: StandingRow }) {
+  const movedUp = row.positionDelta > 0;
+  const movedDown = row.positionDelta < 0;
+
+  return (
+    <article className="rounded-[26px] border border-[rgba(15,33,71,.12)] bg-white/92 p-5 shadow-[0_18px_42px_rgba(15,23,42,.06)]">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            {movedUp ? "Subida del día" : movedDown ? "Retroceso del día" : "Sin cambio"}
+          </p>
+          <h3 className="font-heading mt-3 text-3xl font-semibold text-slate-900">
+            {row.participant.name}
+          </h3>
+        </div>
+        <span
+          className={[
+            "inline-flex items-center gap-1 rounded-full px-3 py-2 text-xs font-semibold",
+            movedUp && "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
+            movedDown && "bg-rose-50 text-rose-700 ring-1 ring-rose-200",
+            !movedUp && !movedDown && "bg-slate-100 text-slate-600 ring-1 ring-slate-200"
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          {movedUp ? <ArrowUpRight aria-hidden="true" className="size-4" /> : null}
+          {movedDown ? <ArrowDownRight aria-hidden="true" className="size-4" /> : null}
+          {movedUp ? `+${row.positionDelta} posición` : movedDown ? `${row.positionDelta} posición` : "Sin movimiento"}
+        </span>
+      </div>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        <div className="rounded-[20px] bg-slate-50 px-4 py-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+            Puntos
+          </p>
+          <p className="mt-2 text-2xl font-semibold text-slate-900">{row.points}</p>
+        </div>
+        <div className="rounded-[20px] bg-slate-50 px-4 py-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+            Última suma
+          </p>
+          <p className="mt-2 text-2xl font-semibold text-slate-900">
+            {row.pointsDelta > 0 ? `+${row.pointsDelta}` : row.pointsDelta}
+          </p>
+        </div>
+      </div>
+    </article>
+  );
 }
 
-function describeMovement(positionDelta: number): string {
-  if (positionDelta > 0) return `subió ${positionDelta}`;
-  if (positionDelta < 0) return `bajó ${Math.abs(positionDelta)}`;
-  return "sin cambio";
+function SurfaceNote({
+  icon,
+  title,
+  body
+}: {
+  icon: ReactNode;
+  title: string;
+  body: string;
+}) {
+  return (
+    <article className="panel p-5">
+      <div className="flex items-center gap-3 text-sky-700">{icon}</div>
+      <h3 className="mt-4 text-lg font-semibold text-slate-900">{title}</h3>
+      <p className="mt-3 text-sm leading-6 text-slate-600">{body}</p>
+    </article>
+  );
+}
+
+function sortedMovers(rows: StandingRow[]) {
+  const movers = [...rows].sort(
+    (left, right) =>
+      Math.abs(right.positionDelta) - Math.abs(left.positionDelta) ||
+      right.pointsDelta - left.pointsDelta ||
+      right.points - left.points
+  );
+
+  return movers.some((row) => row.positionDelta !== 0 || row.pointsDelta !== 0) ? movers : rows.slice(0, 3);
 }

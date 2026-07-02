@@ -3,7 +3,7 @@ import { recalculateAllScores } from "@/lib/scoring/recalculate";
 import { buildStandingsWithRecentMovement } from "@/lib/scoring/standings";
 
 const CREATED_AT = "2026-06-10T18:00:00.000Z";
-export const LAST_UPDATED_AT = "2026-07-02T12:00:00.000Z";
+export const LAST_UPDATED_AT = "2026-07-02T18:30:00.000Z";
 
 export const participants: Participant[] = [
   participant("israel-cabrera", "Israel Cabrera"),
@@ -73,7 +73,10 @@ export const matches: MatchRecord[] = [
     2,
     0
   ),
-  scheduledMatch("argentina-portugal", "Argentina", "Portugal", "2026-07-03T21:00:00.000Z")
+  scheduledMatch("argentina-portugal", "Argentina", "Portugal", "2026-07-03T21:00:00.000Z"),
+  scheduledMatch("espana-austria", "España", "Austria", "2026-07-04T18:00:00.000Z"),
+  scheduledMatch("portugal-croacia", "Portugal", "Croacia", "2026-07-04T21:00:00.000Z"),
+  scheduledMatch("suiza-argelia", "Suiza", "Argelia", "2026-07-05T18:00:00.000Z")
 ];
 
 export const predictions: Prediction[] = [
@@ -135,7 +138,10 @@ export const predictions: Prediction[] = [
     ["mexico-ecuador", 1, 0],
     ["inglaterra-rd-congo", 1, 1],
     ["belgica-senegal", 1, 1, "Bélgica"],
-    ["estados-unidos-bosnia", 1, 1]
+    ["estados-unidos-bosnia", 1, 1],
+    ["espana-austria", 2, 1],
+    ["portugal-croacia", 1, 2],
+    ["suiza-argelia", 1, 1, "Argelia"]
   ]),
   ...participantPredictions("alfredito", [
     ["sudafrica-canada", 1, 0],
@@ -147,7 +153,10 @@ export const predictions: Prediction[] = [
     ["mexico-ecuador", 1, 2],
     ["inglaterra-rd-congo", 2, 0],
     ["belgica-senegal", 1, 1, "Bélgica"],
-    ["estados-unidos-bosnia", 1, 1]
+    ["estados-unidos-bosnia", 1, 1],
+    ["espana-austria", 2, 0],
+    ["portugal-croacia", 2, 1],
+    ["suiza-argelia", 1, 0]
   ]),
   ...participantPredictions("nuria", [
     ["sudafrica-canada", 1, 2],
@@ -159,7 +168,10 @@ export const predictions: Prediction[] = [
     ["mexico-ecuador", 0, 0],
     ["inglaterra-rd-congo", 1, 0],
     ["belgica-senegal", 3, 3, "Bélgica"],
-    ["estados-unidos-bosnia", 1, 1]
+    ["estados-unidos-bosnia", 1, 1],
+    ["espana-austria", 2, 0],
+    ["portugal-croacia", 2, 1],
+    ["suiza-argelia", 1, 0]
   ]),
   ...participantPredictions("rebe-mama", [
     ["sudafrica-canada", 1, 1],
@@ -190,6 +202,13 @@ export const predictions: Prediction[] = [
 export const auditLogs: AuditLog[] = [
   audit("seed-resultados", "bulk_seed", "matches", "resultados-iniciales", "Carga inicial de resultados registrados."),
   audit("seed-pronosticos", "bulk_seed", "predictions", "pronosticos-iniciales", "Carga inicial de pronosticos familiares."),
+  audit(
+    "seed-pronosticos-faltantes",
+    "update",
+    "predictions",
+    "faltantes-julio",
+    "Se agregaron pronosticos faltantes para Alfredito, Nuria y Tío Alfre."
+  ),
   audit("seed-exclusion", "update", "matches", "sudafrica-canada", "Partido excluido conforme a reglas de la quiniela."),
   audit("seed-recalculo", "recalculate", "prediction_scores", "all", "Recalculo inicial con version mundial-2026-v1.")
 ];

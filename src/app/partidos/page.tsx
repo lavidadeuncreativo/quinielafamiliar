@@ -10,8 +10,15 @@ export default async function PartidosPage() {
   }
 
   return (
-    <main className="page-shell">
-      <SectionHeader eyebrow="Calendario" title="Partidos" />
+    <main className="page-shell space-y-8">
+      <section className="premium-band px-5 py-7 sm:px-8 sm:py-8">
+        <SectionHeader eyebrow="Calendario del torneo" title="Partidos" />
+        <p className="max-w-3xl text-base leading-7 text-slate-700">
+          Resultados cerrados, cruces por venir y cuántos pronósticos ya están cargados en cada
+          partido. Todo en un solo frente.
+        </p>
+      </section>
+
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {snapshot.matches.map((match) => (
           <MatchCard key={match.id} match={match} predictionCount={counts.get(match.id) ?? 0} />

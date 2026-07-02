@@ -6,8 +6,15 @@ export default async function TablaPage() {
   const snapshot = await getPublicSnapshot();
 
   return (
-    <main className="page-shell">
-      <SectionHeader eyebrow="Clasificación" title="Tabla completa" />
+    <main className="page-shell space-y-8">
+      <section className="premium-band px-5 py-7 sm:px-8 sm:py-8">
+        <SectionHeader eyebrow="Clasificación oficial" title="Tabla completa" />
+        <p className="max-w-3xl text-base leading-7 text-slate-700">
+          Aquí se ve la carrera completa: posiciones, movimiento contra el último resultado,
+          puntos totales y exactos con lectura rápida, limpia y sin tener que adivinar nada.
+        </p>
+      </section>
+
       <StandingsTable rows={snapshot.standings} />
 
       <section className="mt-6 grid gap-4 md:grid-cols-3">

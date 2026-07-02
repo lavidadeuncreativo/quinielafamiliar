@@ -1,6 +1,6 @@
 insert into public.app_settings (key, value)
 values
-  ('quiniela', '{"entryAmount":200,"prizePool":1800,"currency":"MXN","prizes":[{"place":"Primer lugar","amount":1000},{"place":"Segundo lugar","amount":500},{"place":"Tercer lugar","amount":300}],"lastUpdatedAt":"2026-07-02T12:00:00.000Z"}')
+  ('quiniela', '{"entryAmount":200,"prizePool":1800,"currency":"MXN","prizes":[{"place":"Primer lugar","amount":1000},{"place":"Segundo lugar","amount":500},{"place":"Tercer lugar","amount":300}],"lastUpdatedAt":"2026-07-02T18:30:00.000Z"}')
 on conflict (key) do update set value = excluded.value, updated_at = now();
 
 insert into public.participants (name, slug, paid, entry_amount, active)
@@ -44,7 +44,10 @@ values
   ('inglaterra-rd-congo', 'Eliminatoria', 'Inglaterra', 'RD Congo', '2026-06-18T18:00:00Z', 'completed', 2, 1, null, '2026-06-18T18:00:00Z'),
   ('belgica-senegal', 'Eliminatoria', 'Bélgica', 'Senegal', '2026-06-19T18:00:00Z', 'completed', 2, 2, 'Bélgica', '2026-06-19T18:00:00Z'),
   ('estados-unidos-bosnia', 'Eliminatoria', 'Estados Unidos', 'Bosnia y Herzegovina', '2026-06-20T18:00:00Z', 'completed', 2, 0, null, '2026-06-20T18:00:00Z'),
-  ('argentina-portugal', 'Eliminatoria', 'Argentina', 'Portugal', '2026-07-03T21:00:00Z', 'scheduled', null, null, null, null)
+  ('argentina-portugal', 'Eliminatoria', 'Argentina', 'Portugal', '2026-07-03T21:00:00Z', 'scheduled', null, null, null, null),
+  ('espana-austria', 'Eliminatoria', 'España', 'Austria', '2026-07-04T18:00:00Z', 'scheduled', null, null, null, null),
+  ('portugal-croacia', 'Eliminatoria', 'Portugal', 'Croacia', '2026-07-04T21:00:00Z', 'scheduled', null, null, null, null),
+  ('suiza-argelia', 'Eliminatoria', 'Suiza', 'Argelia', '2026-07-05T18:00:00Z', 'scheduled', null, null, null, null)
 on conflict (external_id) do update
 set stage = excluded.stage,
     home_team = excluded.home_team,
@@ -109,6 +112,9 @@ with prediction_input (participant_slug, match_external_id, home_score, away_sco
     ('tio-alfre', 'inglaterra-rd-congo', 1, 1, null),
     ('tio-alfre', 'belgica-senegal', 1, 1, 'Bélgica'),
     ('tio-alfre', 'estados-unidos-bosnia', 1, 1, null),
+    ('tio-alfre', 'espana-austria', 2, 1, null),
+    ('tio-alfre', 'portugal-croacia', 1, 2, null),
+    ('tio-alfre', 'suiza-argelia', 1, 1, 'Argelia'),
     ('alfredito', 'sudafrica-canada', 1, 0, null),
     ('alfredito', 'brasil-japon', 2, 1, null),
     ('alfredito', 'alemania-paraguay', 0, 0, 'Paraguay'),
@@ -119,6 +125,9 @@ with prediction_input (participant_slug, match_external_id, home_score, away_sco
     ('alfredito', 'inglaterra-rd-congo', 2, 0, null),
     ('alfredito', 'belgica-senegal', 1, 1, 'Bélgica'),
     ('alfredito', 'estados-unidos-bosnia', 1, 1, null),
+    ('alfredito', 'espana-austria', 2, 0, null),
+    ('alfredito', 'portugal-croacia', 2, 1, null),
+    ('alfredito', 'suiza-argelia', 1, 0, null),
     ('nuria', 'sudafrica-canada', 1, 2, null),
     ('nuria', 'brasil-japon', 2, 1, null),
     ('nuria', 'alemania-paraguay', 2, 2, 'Alemania'),
@@ -129,6 +138,9 @@ with prediction_input (participant_slug, match_external_id, home_score, away_sco
     ('nuria', 'inglaterra-rd-congo', 1, 0, null),
     ('nuria', 'belgica-senegal', 3, 3, 'Bélgica'),
     ('nuria', 'estados-unidos-bosnia', 1, 1, null),
+    ('nuria', 'espana-austria', 2, 0, null),
+    ('nuria', 'portugal-croacia', 2, 1, null),
+    ('nuria', 'suiza-argelia', 1, 0, null),
     ('rebe-mama', 'sudafrica-canada', 1, 1, null),
     ('rebe-mama', 'brasil-japon', 1, 0, null),
     ('rebe-mama', 'alemania-paraguay', 2, 2, 'Paraguay'),
@@ -280,7 +292,7 @@ select
   reason,
   score_status,
   'mundial-2026-v1',
-  '2026-07-02T12:00:00Z'
+  '2026-07-02T18:30:00Z'
 from explained
 on conflict (prediction_id) do update
 set exact_score_points = excluded.exact_score_points,
@@ -293,7 +305,8 @@ set exact_score_points = excluded.exact_score_points,
 
 insert into public.audit_logs (action, entity_type, entity_id, before_data, after_data, reason, created_at)
 values
-  ('bulk_seed', 'matches', 'resultados-iniciales', null, null, 'Carga inicial de resultados registrados.', '2026-07-02T12:00:00Z'),
-  ('bulk_seed', 'predictions', 'pronosticos-iniciales', null, null, 'Carga inicial de pronosticos familiares.', '2026-07-02T12:00:00Z'),
-  ('update', 'matches', 'sudafrica-canada', null, null, 'Partido excluido conforme a reglas de la quiniela.', '2026-07-02T12:00:00Z'),
-  ('recalculate', 'prediction_scores', 'all', null, '{"calculationVersion":"mundial-2026-v1"}', 'Recalculo inicial con version mundial-2026-v1.', '2026-07-02T12:00:00Z');
+  ('bulk_seed', 'matches', 'resultados-iniciales', null, null, 'Carga inicial de resultados registrados.', '2026-07-02T18:30:00Z'),
+  ('bulk_seed', 'predictions', 'pronosticos-iniciales', null, null, 'Carga inicial de pronosticos familiares.', '2026-07-02T18:30:00Z'),
+  ('update', 'predictions', 'faltantes-julio', null, null, 'Se agregaron pronosticos faltantes para Alfredito, Nuria y Tío Alfre.', '2026-07-02T18:30:00Z'),
+  ('update', 'matches', 'sudafrica-canada', null, null, 'Partido excluido conforme a reglas de la quiniela.', '2026-07-02T18:30:00Z'),
+  ('recalculate', 'prediction_scores', 'all', null, '{"calculationVersion":"mundial-2026-v1"}', 'Recalculo inicial con version mundial-2026-v1.', '2026-07-02T18:30:00Z');
